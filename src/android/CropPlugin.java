@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 
 import com.soundcloud.android.crop.Crop;
 
@@ -21,11 +22,16 @@ public class CropPlugin extends CordovaPlugin {
     private CallbackContext callbackContext;
     private Uri inputUri;
     private Uri outputUri;
+    private int aspectX , aspectY;
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
       if (action.equals("cropImage")) {
           String imagePath = args.getString(0);
+
+          Log.i("TAG", args.getJSONObject(1).toString());
+          aspectX = args.getJSONObject(1).getInt("aspectX");
+          aspectY = args.getJSONObject(1).getInt("aspectY");
 
           this.inputUri = Uri.parse(imagePath);
           this.outputUri = Uri.fromFile(new File(getTempDirectoryPath() + "/" + System.currentTimeMillis()+ "-cropped.jpg"));
@@ -37,7 +43,7 @@ public class CropPlugin extends CordovaPlugin {
 
           cordova.setActivityResultCallback(this);
           Crop.of(this.inputUri, this.outputUri)
-                  .asSquare()
+                  .withAspect(aspectX,aspectY)
                   .start(cordova.getActivity());
           return true;
       }
